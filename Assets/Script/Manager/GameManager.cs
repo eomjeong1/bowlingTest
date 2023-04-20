@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,95 +20,187 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    public Player player = new Player("",0,0,0,0,0);
+    public Player player = new Player("", 0, 0, 0, 0, 0);
 
-    public bool lastStrike;
-    public bool lastSpare;
-    public bool firstShoot;
-    public bool lastShoot;
+    /*public bool isStrike;
+    public bool isDouble;
+    public bool isTriple;
+    public bool isSpare;
+    public bool isFirstShoot;
+    public bool isSecondShoot;
+    public bool isThirdShoot;
+    public bool isLastFrame;
     public int FrameNum;
-    public int firstpinCount;
-    public int lastpinCount;
+    // public int[] FrameNum = new int[9];
+    public int[] firstpin = new int[9];
+    public int[] lastpin = new int[9];
+    public int FirstpinCount;
+    public int SecondpinCount;
+    public int ThirdpinCount;
+    public int frame;
 
-
-    ScoreBoard scoreBoard;
+    public Text[] FrameNumber;
+    public Text[] firstScore;
+    public Text[] secondScore;
+    public Text[] SumScore;
+    //public bool isRound
+*/
     public void Start()
     {
-        FrameNum = 1;
+
     }
-    public void ScoreJudgement(int firstpinCount, int lastpinCount)
+    /*    public void FrameCheck()
+        {
+            for (int i = 0; i < FrameNum.Length; i++)
+            {
+                FrameNumber.text = $"{FrameNum[i]}";
+                firstpin[i] = GameManager.GetInstance().firstpinCount;
+                lastpin[i] = GameManager.GetInstance().lastpinCount;
+
+                ScoreJudgement(firstpinCount, lastpinCount);
+                FrameCount();
+            }
+        }*/
+    /*public void NextFrame(int i)
     {
-        /*firstpinCount =
-        lastpinCount = */
-        if(firstShoot)
+        FrameNum++;
+        FrameNumber[i].text = $"{FrameNum++}";
+        if (FrameNum == 10)
+            isLastFrame = true;
+        FirstScore(i);
+    }
+
+    IEnumerator FrameCount()
+    {
+        frame = 1;
+        frame++;
+        if (frame < 10)
         {
-            if (lastStrike)
-            {
-                player.PlusScore(firstpinCount * 2);
-                if (firstpinCount == 10)
-                {
-                    lastStrike = true;
-                    lastShoot = false;
-                    firstShoot = true;
-                    FrameNum++;
-                    lastpinCount = 0;
-                }
-
-                else
-                {
-                    lastShoot = true;
-                }
-                    
-                    
-
-
-            }
-            else if (lastSpare)
-            {
-                lastSpare = false;
-                player.PlusScore(firstpinCount * 2);
-                if (firstpinCount == 10)
-                {
-                    lastStrike = true;
-                    lastShoot = false;
-                    firstShoot = true;
-                    FrameNum++;
-                }
-                
-                else
-                    lastShoot = true;
-            }
-            else
-            { 
-                player.PlusScore(firstpinCount);
-            }
+            return FrameCount();
         }
-        if (lastShoot)
+        return null;
+    }
+    public void FirstScore(int i)
+    {
+        for (int j = 0; j < firstpin.Length; j++)
         {
-            if (lastStrike)
+            if (FirstpinCount == 10)
             {
-                player.PlusScore(lastpinCount * 2);
-                if (firstpinCount + lastpinCount == 10)
-                {
-                    lastSpare = true;
-                    lastShoot = false;
-                    firstShoot = true;
-                    FrameNum++;
-                }
-
-                else
-                {
-                    lastShoot = false;
-                    firstShoot = true;
-                }
+                firstScore[i].text = "X";
+                secondScore[i].text = "";
+                ScoreJudgement();
+                NextFrame(i);
+            }
+            else if (FirstpinCount == 0)
+            {
+                firstScore[i].text = "-";
+                SecondScore(i);
             }
             else
             {
-                player.PlusScore(lastpinCount);
-                lastShoot = false;
-                firstShoot = false;
-                FrameNum++;
+                firstScore[i].text = FirstpinCount.ToString();
+                SecondScore(i);
             }
         }
     }
+
+    public void SecondScore(int i)
+    {
+        for (int j = 0; j < firstpin.Length; j++)
+        {
+            if (isSecondShoot == true)
+            {
+                j = i;
+                if (SecondpinCount + FirstpinCount == 10)
+                {
+                    secondScore[i].text = "/";
+                }
+                else
+                {
+                    secondScore[i].text = GameManager.GetInstance().SecondpinCount.ToString();
+                }
+                ScoreJudgement();
+                NextFrame(i);
+            }
+        }
+    }
+
+    public void ScoreJudgement()
+    {
+        if (!isLastFrame)
+        {
+            if (isFirstShoot)
+            {
+                if (isStrike)
+                {
+                    player.PlusScore(FirstpinCount * 2);
+                    if (FirstpinCount == 10)
+                    {
+                        isStrike = true;
+                        isSecondShoot = false;
+                        isFirstShoot = true;
+                        SecondpinCount = 0;
+                    }
+
+                    else
+                    {
+                        isSecondShoot = true;
+                    }
+                }
+                else if (isDouble)
+                {
+                    player.PlusScore(FirstpinCount * 2);
+                }
+                else if (isSpare)
+                {
+                    isSpare = false;
+                    player.PlusScore(FirstpinCount * 2);
+                    if (FirstpinCount == 10)
+                    {
+                        isStrike = true;
+                        isSecondShoot = false;
+                        isFirstShoot = true;
+                    }
+
+                    else
+                        isSecondShoot = true;
+                }
+                else
+                {
+                    player.PlusScore(FirstpinCount);
+                }
+            }
+            if (isSecondShoot)
+            {
+                if (isStrike)
+                {
+                    player.PlusScore(SecondpinCount * 2);
+                    if (FirstpinCount + SecondpinCount == 10)
+                    {
+                        isSpare = true;
+                        isSecondShoot = false;
+                        isFirstShoot = true;
+                    }
+
+                    else
+                    {
+                        isSecondShoot = false;
+                        isFirstShoot = true;
+                    }
+                }
+                else
+                {
+                    player.PlusScore(SecondpinCount);
+                    isSecondShoot = false;
+                    isFirstShoot = false;
+                }
+            }
+        }
+        else if (isLastFrame)
+        { 
+        
+        }
+    }*/
+
+    
 }
