@@ -4,70 +4,79 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class ScoreBoard : MonoBehaviour
-{
-    int[] score = new int[9];
-    public int frame = 0;
+{ 
+    public int[] score = new int[10];           // 점수 배열
+    public int frame = 0;                       // 현재 프레임
+    
+    bool isStrike;                              // 스트라이크 확인
+    bool isSpare;                               // 스페어 확인
+    int StrikeCheck;                            // 연속 스트라이크 확인(더블, 트리플(터키))
+    public int[] firstPinCount = new int[10];   // 첫번째 투구에서 넘어진 핀의 개수 배열
+    public int[] secondPinCount = new int[10];  // 두번째 투구에서 넘어진 핀의 개수 배열
+    int thirdPinCount;                          // 10번째 프레임 보너스 투구에서 넘어진 핀의 개수
+    int[] frameScore;                           // 현재 프레임 점수
 
-    bool isStrike;
-    bool isSpare;
-    int StrikeCheck;
-    public int[] firstPinCount = new int[9];
-    public int[] secondPinCount = new int[9];
-    int thirdPinCount;
+    public Text[] firstScoretxt;                // 첫번째 투구로 얻은 점수 텍스트 배열
+    public Text[] secondScoretxt;               // 두번째 투구로 얻은 점수 텍스트 배열
+    public Text thirdScoretxt;                  // 10번째 프레임 보너스 투구로 얻은 점수 텍스트
+    public Text[] sumScoretxt;                  // 프레임 당 합산 점수 텍스트 배열
 
-    public Text[] firstScoretxt;
-    public Text[] secondScoretxt;
-    public Text thirdScoretxt;
-    public Text[] sumScoretxt;
+    public Button InputBtn;                     // 넘어뜨린 핀 개수 입력 버튼
+    public InputField InputField;               // 넘어뜨린 핀 개수 입력 란
 
-    public Button InputBtn;
-    public InputField InputField;
-
-    public Player player = new Player("", 0, 0, 0, 0, 0, 0);
+    public Player player = new Player("", 0, 0, 0, 0, 0, 0); // 플레이어 정보
 
     public void Start()
     {
         OnclickBtn();
     }
+
+    /// <summary>
+    /// 버튼 온클릭 기능 추가
+    /// </summary>
     public void OnclickBtn()
     {
         InputBtn.onClick.AddListener(InputCheck);
     }
 
+    /// <summary>
+    /// 입력된 텍스트를 점수로 변환
+    /// </summary>
     public void InputCheck()
     {
         int i = frame;
 
-        if (player.shootCount == 0)
+        if (player.shootCount == 0) // 프레임 별 첫번째 투구 일 때
         {
-            Mathf.Clamp(firstPinCount[i], 0, 10);
             firstPinCount[i] = int.Parse(InputField.text);
-            if (int.Parse(InputField.text) > 10)
+            if (int.Parse(InputField.text) > 10) // 입력된 핀의 개수가 10개 이상이면 리턴 
             {
                 Debug.Log("핀 개수를 초과합니다.");
+                return;
             }
-            if (firstPinCount[i] == 10)
+            if (firstPinCount[i] == 10)  // 입력된 핀의 개수가 10개면 스트라이크
             {
                 isStrike = true;
-                switch (StrikeCheck)
+                switch (StrikeCheck)  // 연속 스트라이크 확인
                 {
                     case (0):
-                        if (StrikeCheck == 0)
+                        if (StrikeCheck == 0) // 스트라이크
                         {
                             if (firstPinCount[i] == 10)
                                 StrikeCheck = 1;
                         }
                         break;
                     case (1):
-                        if (StrikeCheck == 1)
+                        if (StrikeCheck == 1) // 더블
                         {
                             if (firstPinCount[i] == 10)
                                 StrikeCheck = 2;
                         }
                         break;
                     case (2):
-                        if (StrikeCheck == 2)
+                        if (StrikeCheck == 2) // 트리플(터키)
                         {
                             if (firstPinCount[i] == 10)
                                 StrikeCheck = 3;
@@ -75,62 +84,86 @@ public class ScoreBoard : MonoBehaviour
                         break;
 
                 }
-
-                Debug.Log("StrikeCheck :" + StrikeCheck);
-                Debug.Log("프레임" + frame + "1번째 핀" + firstPinCount[i]);
             }
+            else // 입력된 핀의 개수가 10개 미만이면
+            {
+                isStrike = false;
+                Debug.Log("isStrike = false");
+            }
+                Debug.Log("프레임" + frame + "1번째 핀" + firstPinCount[i]);
         }
 
-        else if (player.shootCount == 1)
+        else if (player.shootCount == 1) // 프레임 별 두번째 투구
         {
-            Mathf.Clamp(secondPinCount[i], 0, 10 - firstPinCount[i]);
             secondPinCount[i] = int.Parse(InputField.text);
-            if (int.Parse(InputField.text) > 10 - firstPinCount[i])
+            if (int.Parse(InputField.text) > 10 - firstPinCount[i]) 
+                // 두번째 핀의 개수가 첫번째 핀의 개수와 더했을 때 10이상이면 리턴
             {
                 Debug.Log("남은 핀 개수를 초과합니다.");
             }
 
-            if (firstPinCount[i] + secondPinCount[i] == 10)
+            if (firstPinCount[i] + secondPinCount[i] == 10) 
+                // 첫번째 핀과 두번째 핀의 합이 10이면 스페어
             {
                 isSpare = true;
                 Debug.Log("isSpare");
             }
+            else
+            {
+                isSpare = false;
+                Debug.Log("isSpare = false");
+            }
+ 
+
+
             Debug.Log("프레임" + frame + "2번째 핀" + secondPinCount[i]);
         }
-        else
+        else // 3번째 투구, 10프레임의 보너스 투구일 때
         {
             thirdPinCount = int.Parse(InputField.text);
             Debug.Log(frame + thirdPinCount);
         }
-        CalculateScore(i);
+        CalculateScore(i); // 점수 계산함수로
     }
+
+    /// <summary>
+    /// 점수를 계산하는 함수
+    /// </summary>
+    /// <param name="i">현재 프레임</param>
     public void CalculateScore(int i)
     {
-        int currentScore = score[i];
+
         Debug.Log("CalculateStart");
 
-        if (player.shootCount == 0)
+        if (player.shootCount == 0) // 첫번째 투구일 때
         {
-            if (isStrike)
+            if (isStrike) // 스트라이크 조건일 때
             {
-                while (StrikeCheck == 0)
+                if (StrikeCheck == 1) // 스트라이크 일때
                 {
-                    if (StrikeCheck == 1)
-                    {
-                        continue;
-                    }
-                    if (StrikeCheck == 2)
-                    {
-                        continue;
-                    }
+                    if (i > 0)
+                        score[i] = score[i - 1] + firstPinCount[i] + secondPinCount[i] + firstPinCount[i+1] + secondPinCount[i+1]; // score[i-1] : 전 프레임까지 얻은 점수
+                    else
+                        score[i] = firstPinCount[i] + secondPinCount[i];
 
-                    else if (StrikeCheck == 3)
-                    {
-                        continue;
-                    }
+                    Debug.Log(score[i]);
+                }
+                if (StrikeCheck == 2) // 더블일 때
+                {
+                    score[i] = score[i - 1] + firstPinCount[i] + secondPinCount[i] + firstPinCount[i + 1] + secondPinCount[i + 1] + firstPinCount[i + 2] + secondPinCount[i + 2];
+
+                    Debug.Log(score[i]);
+                    
+                }
+                else if (StrikeCheck == 3) // 트리플일 때
+                {
+                    score[i] = score[i - 1] + 30;
+
+                    Debug.Log(score[i]);
+                   
                 }
             }
-            else
+            else // 스트라이크 조건이지만 마지막 보너스 투구일 때
             {
                 if (player.shootCount == 2)
                 {
@@ -138,37 +171,12 @@ public class ScoreBoard : MonoBehaviour
                     Debug.Log(score[i]);
                     StrikeCheck = 0;
                 }
-                else
-                {
-                    if (StrikeCheck == 1)
-                    {
-                        score[i] = firstPinCount[i] + secondPinCount[i] + score[i];
-                        score[i - 1] = firstPinCount[i] + secondPinCount[i] + score[i - 1];
-                    }
-                    if (StrikeCheck == 2)
-                    {
-                        score[i] = firstPinCount[i] + secondPinCount[i] + score[i];
-                        score[i - 1] = firstPinCount[i] + secondPinCount[i] + score[i - 1];
-                        score[i - 2] = firstPinCount[i - 1] + secondPinCount[i - 1] + score[i - 2];
+                Debug.Log(score[i]);
+                StrikeCheck = 0;
 
-                    }
-                    else if (StrikeCheck == 3)
-                    {
-                        score[i] = firstPinCount[i] + secondPinCount[i] + score[i];
-                        score[i - 1] = firstPinCount[i] + secondPinCount[i] + score[i - 1];
-                        score[i - 2] = firstPinCount[i - 1] + secondPinCount[i - 1] + firstPinCount[i] + secondPinCount[i] + score[i - 2];
-                        score[i - 3] = firstPinCount[i - 2] + secondPinCount[i - 2] + firstPinCount[i - 1] + secondPinCount[i - 1] + firstPinCount[i] + secondPinCount[i] + score[i - 3];
 
-                    }
-                    if(i > 0)
-                    score[i] = firstPinCount[i] + secondPinCount[i] + score[i - 1];
-                    else
-                        score[i] = firstPinCount[i] + secondPinCount[i];
-
-                    Debug.Log(score[i]);
-                    StrikeCheck = 0;
-                }
             }
+            Debug.Log("StrikeCheck :" + StrikeCheck);
         }
         if (player.shootCount == 1)
         {
@@ -176,34 +184,17 @@ public class ScoreBoard : MonoBehaviour
             {
                 if (player.shootCount == 2)
                 {
-                    score[i] = firstPinCount[i] + secondPinCount[i] + thirdPinCount;
+                    score[i] = score[i - 1] + firstPinCount[i] + secondPinCount[i] + thirdPinCount;
                     Debug.Log(score[i]);
-                    isSpare = false;
                 }
                 else
                 {
-                    if (player.shootCount == 1)
-                    {
-                        while (player.shootCount == 0)
-                        {
-                            Debug.Log($"Skip : {frame}번째 프레임 점수");
-                            if (player.shootCount == 0)
-                            {
-                                score[i] = firstPinCount[i] + secondPinCount[i] + firstPinCount[i + 1] + score[i - 1];
-                                Debug.Log(score[i]);
-                                isSpare = false;
-                                break;
-                            }
-                        }
-                    }
-/*                    else if (player.shootCount == 0)
-                    {
-                        score[i] = firstPinCount[i] + secondPinCount[i] + firstPinCount[i + 1] + score[i - 1];
-                        Debug.Log(score[i]);
-                        isSpare = false;
-                    }*/
-
+                    if(i > 0)
+                    score[i] = score[i-1] + firstPinCount[i] + secondPinCount[i] + firstPinCount[i + 1];
+                    else
+                        score[i] = firstPinCount[i] + secondPinCount[i] + firstPinCount[i + 1];
                 }
+ 
             }
             else
             {
